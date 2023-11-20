@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="SEO Butler, seobutler.chat">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <link rel="shortcut icon" href="assets/images/logo.png" type="image/x-icon">
+    <meta name="description" content="">
+
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            text-align: center;
+        }
+        header {
+            background: #333;
+            color: white;
+            padding: 10px 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        footer {
+            background: #333;
+            color: white;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .category-card {
+            margin: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        /* Other styles as needed */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to PJ Cooling</h1>
+    </header>
+    <div class="container" id="category-cards-container">
+        <!-- Category cards will be inserted here dynamically -->
+    </div>
+    <footer>
+        <p>© 2023 PJ Cooling</p>
+    </footer>
+
+    <script>
+        const apiKey = 'AIzaSyDaxnxVP4XwcAcYIH9kuo3K8lJh3s6Jszs';
+        const sheetId = '1SMlN_fAP_JqAAdy1CKBnwiC1dMadSR_kkMyv8D0Fw44';
+
+        function fetchCategories() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/categories!B2:B?key=${apiKey}`;
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.values) {
+                    createCategoryCards(data.values);
+                }
+            })
+            .catch(error => console.error('Error fetching categories: ', error));
+        }
+
+        function createCategoryCards(categories) {
+            const container = document.getElementById('category-cards-container');
+            categories.forEach(category => {
+                const card = createCard(category[0]);
+                container.appendChild(card);
+            });
+        }
+
+        function createCard(categoryName) {
+            const card = document.createElement('div');
+            card.className = 'category-card';
+            card.innerHTML = `
+                <p class="mbr-text mbr-fonts-style mt-3 display-7">
+                    Description for ${categoryName}. <a href="products.html?category=${encodeURIComponent(categoryName)}" class="text-primary">Read more..</a>
+                </p>
+            `;
+            return card;
+        }
+
+        window.onload = fetchCategories;
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Head content like title, meta tags, and link to stylesheets -->
+    <title>Products</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #search-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .product-card {
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: 0.3s;
+            width: calc(100% - 40px);
+            margin: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            background: #f2f2f2;
+        }
+        .product-card img {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .product-card h5, .product-card p {
+            margin: 10px 0;
+        }
+        @media screen and (min-width: 600px) {
+            .product-card {
+                width: calc(50% - 40px);
+                float: left;
+            }
+        }
+        @media screen and (min-width: 900px) {
+            .product-card {
+                width: calc(33.333% - 40px);
+            }
+        }
+		        .category-button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .category-button:hover {
+            background-color: #45a049;
+        }
+        .button-container {
+            text-align: center;
+            padding: 20px;
+        }
+		
+		.main-container {
+			max-width: 1200px;
+			margin: 0 auto; /* Centers the container */
+			padding: 20px;
+		}
+		
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+		<div>
+			<input type="text" id="search-input" placeholder="Search products...">
+		</div>
+		<div id="products-container">
+			<!-- Products will be displayed here -->
+		</div>
+		<div class="button-container" id="category-buttons">
+			<!-- Category buttons will be inserted here -->
+		</div>
+    </div>
+
+
+    <script>
+        const apiKey = 'AIzaSyDaxnxVP4XwcAcYIH9kuo3K8lJh3s6Jszs';
+        const sheetId = '1SMlN_fAP_JqAAdy1CKBnwiC1dMadSR_kkMyv8D0Fw44';
+        let allProducts = []; // To store all fetched products
+
+        function fetchProductsByCategory() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            if (!category) {
+                // Handle case where no category is specified
+                return;
+            }
+
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/stock!A2:J?key=${apiKey}`;
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.values) {
+                    allProducts = data.values; // Store all products
+                    displayProducts(allProducts, category);
+                }
+            })
+            .catch(error => console.error('Error fetching products: ', error));
+        }
+
+        function displayProducts(products, category) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = ''; // Clear existing products
+            products.forEach(product => {
+                if (!category || product[8] === category) { // Filter by category, if specified
+                    const productCard = createProductCard(product);
+                    container.appendChild(productCard);
+                }
+            });
+        }
+
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <h5>${product[2]}</h5> <!-- Product name -->
+                <p>${product[3]}</p> <!-- Product description -->
+                <img src="${product[6]}" alt="${product[2]}" /> <!-- Product image -->
+                <p>Price: ${product[4]}</p> <!-- Product price -->
+                <!-- Add more product details as needed -->
+            `;
+            return card;
+        }
+
+        function searchProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filteredProducts = allProducts.filter(product => 
+                product.some(field => field && field.toString().toLowerCase().includes(searchTerm))
+            );
+            displayProducts(filteredProducts, null); // Display filtered products without category filtering
+        }
+		
+        function fetchCategoriesAndCreateButtons() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/categories!B2:B?key=${apiKey}`;
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.values) {
+                    createCategoryButtons(data.values);
+                }
+            })
+            .catch(error => console.error('Error fetching categories: ', error));
+        }
+
+        function createCategoryButtons(categories) {
+            const container = document.getElementById('category-buttons');
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'category-button';
+                button.textContent = category[0];
+                button.onclick = () => {
+                    window.location.href = `products.html?category=${encodeURIComponent(category[0])}`;
+                };
+                container.appendChild(button);
+            });
+            // Add a Home button
+            const homeButton = document.createElement('button');
+            homeButton.className = 'category-button';
+            homeButton.textContent = 'Home';
+            homeButton.onclick = () => {
+                window.location.href = 'index.html';
+            };
+            container.appendChild(homeButton);
+        }
+
+        window.onload = () => {
+            fetchProductsByCategory();
+            fetchCategoriesAndCreateButtons();
+        };
+		
+        
+    </script>
+</body>
+</html>
